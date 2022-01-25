@@ -1,0 +1,26 @@
+Initializing pulse oximeter..SUCCESS
+Heart rate:0.00bpm / SpO2:0%
+Heart rate:0.00bpm / SpO2:0%
+Heart rate:0.00bpm / SpO2:0%
+Heart rate:0.00bpm / SpO2:0%
+Beat!
+Beat!
+Heart rate:0.13bpm / SpO2:0%
+Heart rate:0.13bpm / SpO2:0%
+Beat!
+Heart rate:0.33bpm / SpO2:78%
+Heart rate:0.33bpm / SpO2:78%
+Heart rate:0.00bpm / SpO2:0%
+Heart rate:0.00bpm / SpO2:0%
+Beat!
+Heart rate:23.98bpm / SpO2:0%
+Beat!
+Beat!
+Heart rate:65.82bpm / SpO2:94%
+Beat!
+Heart rate:108.96bpm / SpO2:94%
+Beat!
+Beat!
+Heart rate:84.51bpm / SpO2:96%
+Beat!
+Heart rate:83.80bpm / SpO2:96%
