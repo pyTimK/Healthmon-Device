@@ -35,7 +35,6 @@ def _save_tts(response: tts.SynthesizeSpeechResponse):
 
 
 def _convert(*texts: str):
-    # synthesis_input = tts.SynthesisInput(text="Kumusta na ang buhay Sophia Belen. ikinagagalak kitang makita. Ang iyong mga mata ay kasing dilag ng amerikanong bulaklak.")
     synthesis_input = tts.SynthesisInput(text=" ".join(texts))
 
     response = _client.synthesize_speech(input=synthesis_input, voice=_voice, audio_config=_audio_config)
@@ -52,9 +51,10 @@ normal_result_mapping = {
 def _generate_message_text(health_workers: List[Dict]):
     addressing_text = 'kay' if len(health_workers) < 2 else 'kina'
     health_workers_text = ""
-    if len(health_workers) < 1:
-        health_workers_text = "Dr. Belen"
-    elif len(health_workers) == 1:
+    if len(health_workers) == 0:
+        return ""
+    
+    if len(health_workers) == 1:
         health_workers_text = health_workers[0]["name"]
     else:
         i = 0
@@ -74,8 +74,7 @@ def _generate_string_to_speak(temp: float, pulse: int, spo2: int, user: Dict):
     pulse_analysis_text = normal_result_mapping[normal_pulse(pulse)]
     spo2_text = f"Ang saturasyon ng oxygen sa iyong dugo ay {spo2} porsyento. "
     spo2_analysis_text = normal_result_mapping[normal_spo2(spo2)]
-    message_text = "" if normal_measures(temp, pulse, spo2) else _generate_message_text(user["healthWorkers"])
-    
+    message_text = "" if (normal_measures(temp, pulse, spo2) or len(user["healthWorkers"]) == 0) else _generate_message_text(user["healthWorkers"])
     return temp_text + temp_analysis_text + pulse_text + pulse_analysis_text + spo2_text + spo2_analysis_text + message_text
 
 
