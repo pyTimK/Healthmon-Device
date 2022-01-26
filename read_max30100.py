@@ -6,20 +6,17 @@ import serial
 
 
 # if valid readings surpasses 10 counts, then average last 5 valid readings
-_surpass_counts = 13
+_surpass_counts = 15
 _get_average_count = 7 # Must be less than _surpass_counts
 
 def _is_valid(pulse: int, spo2: int) -> bool:
-    return pulse > 40 and spo2 > 70
+    return pulse > 60 and spo2 > 70
 
 def read_max30100(program_status: Dict[str, bool]) -> Tuple[int, int]:
 	'''Returns pulse and spo2. Returns -1 on both of them on error'''
 	try:
-		print("DAFUQ")
 		ser = serial.Serial('/dev/ttyUSB0', 115200, timeout=5)
-		print("waw")
 		ser.reset_input_buffer()
-		print("waw2")
 		valid_readings = []
 
 		while program_status["alive"] and program_status["detecting_hand"] :

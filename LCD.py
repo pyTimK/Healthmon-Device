@@ -12,7 +12,7 @@ _lcd = i2c.CharLCD('PCF8574', 0x27, charmap='A00')
 
 
 
-_led_backlight_button = Button(26)
+_lcd_backlight_button = Button(26)
 
 def _toggle_backlight():
     _lcd.backlight_enabled = not _lcd.backlight_enabled
@@ -21,7 +21,7 @@ def _toggle_backlight():
 def run_lcd(program_status: Dict[str, bool], program_store: Dict):
     _lcd.backlight_enabled = True
     dots = 0
-    _led_backlight_button.when_pressed = _toggle_backlight
+    _lcd_backlight_button.when_pressed = _toggle_backlight
 
     while program_status["alive"]:
         user = program_store["user"]
@@ -80,7 +80,7 @@ def print_measuring(program_status: Dict[str, bool]):
 def _show_device_paired():
     _write_lcd(
         "",
-        "--Device Paired--".center(20),
+        "--Device Linked--".center(20),
         "",
         "",
     )

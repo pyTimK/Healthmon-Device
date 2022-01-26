@@ -65,10 +65,10 @@ def day_greetings():
     hr = datetime.now().hour
 
     if hr < 12:
-        return "Good morning"
+        return "Magandang umaga, "
     if hr < 18:
-        return "Good afternoon"
-    return "Good evening"
+        return "Magandang hapon"
+    return "Magandang gabi"
 
 
 def generate_code() -> int:

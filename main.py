@@ -81,9 +81,6 @@ def measure():
         with concurrent.futures.ThreadPoolExecutor() as executor:
 
             # Ultrasonic sensor waits for hand detection before continuing
-            #thread_wait_hand_detect = executor.submit(wait_hand_detect, program_status, 1, 0.2)
-            #thread_wait_hand_detect.result()
-
             wait_hand_detect(program_status, 0.5, 0.2)
 
             # Return if the program exited already

@@ -8,11 +8,13 @@ from time import sleep
 i2c = io.I2C(board.SCL, board.SDA, frequency=10000)
 mlx = adafruit_mlx90614.MLX90614(i2c)
 
-temp_calibrate = 2.0 # Adjusted for wrist measurements
+temp_calibrate = 2.3 # Adjusted for wrist measurements
 
 
 
-samples_len = 30
+samples_len = 50
+
+
 samples = [0] * samples_len
 
 def read_temp() -> float:

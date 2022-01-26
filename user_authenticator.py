@@ -5,7 +5,7 @@ from firestore_helper import device_doc_ref, device_authenticate_ref
 from funcs import generate_code
 from file_helper import save_user
 
-_time_expiration = 20 
+_time_expiration = 30 # in seconds
 
 print_success_authenticate = lambda : print("---New user authenticated---")
 print_failed_authenticate = lambda : print("---New user authentication failed---")
@@ -32,7 +32,6 @@ def _clear_new_user():
 def _start_pairing(new_doc, program_status: Dict[str, bool], program_store: Dict):
         code = generate_code()
         program_store["confirm_code"] = code
-        program_store["confirm_code_sec"] = 20
         program_status["is_pairing"] = True
         device_authenticate_ref.set({"code": code})
         _start_countdown(program_status, program_store)
