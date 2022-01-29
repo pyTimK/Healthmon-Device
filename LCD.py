@@ -9,7 +9,8 @@ _lcd_col = 20
 _lcd_row = 4
 _lcd = i2c.CharLCD('PCF8574', 0x27, charmap='A00')
 
-
+# from rpi_lcd import LCD
+# _lcd2 = LCD()
 
 
 _lcd_backlight_button = Button(26)
@@ -157,7 +158,7 @@ def _write_lcd(l1: str, l2: str, l3: str, l4: str):
             _lcd.write_string(l4.ljust(_lcd_col))
             break        
         except:
-            print("Encountered I/O Error to LCD!")
+            # print("Encountered I/O Error to LCD!")
             _lcd.clear()
 
 

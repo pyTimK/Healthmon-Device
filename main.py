@@ -1,4 +1,5 @@
 
+import subprocess
 from signal import SIGINT, signal, SIGTERM, SIGHUP
 from time import sleep
 from funcs import failed_reading, normal_measures
@@ -14,6 +15,7 @@ from firestore_helper import write_record_firestore
 from user_authenticator import user_authenticator
 from google_wavenet import speak_results
 from sms import health_worker_sms
+from startup_shutdown import play_startup_sound, play_shutdown_sound, shutdown_rpi
 
 # Constants
 stop_reading_time = 5 # in seconds  
@@ -39,6 +41,7 @@ program_status = {
     "show_results": False,
     "is_pairing": False,
     "paired_new_user": False,
+    "shutdown": False,
 }
 
 #Initialize signal interrupts
@@ -85,7 +88,7 @@ def measure():
 
             # Return if the program exited already
             if not program_status["alive"]:
-                return
+                break
 
             # Start reading from temperature and heart rate sensors
             program_status["reading"] = True
@@ -123,10 +126,26 @@ def measure():
             # Sleep for some time before starting to measure again
             # sleep(stop_reading_time)
 
+    # print(program_status["shutdown"])
+    if program_status["shutdown"]:
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            executor.submit(play_shutdown_sound)
+
+        sleep(1)
+        print("\n---EXITED SAFELY---")
+        subprocess.run(['sudo','shutdown', 'now'])
+
+        
+
             
+
 
 with concurrent.futures.ThreadPoolExecutor() as executor:
     executor.submit(measure)
     executor.submit(run_lcd, program_status, program_store)
     executor.submit(user_authenticator, program_status, program_store)
+    executor.submit(play_startup_sound)
+    executor.submit(shutdown_rpi, program_status)
+    
+    
 

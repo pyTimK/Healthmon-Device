@@ -28,4 +28,9 @@ def read_temp() -> float:
     return temp
 
 
+#TESTING---------------------------------
+# def read_temp() -> float:
+#     '''Returns temperature read on MLX90614 module'''
+#     return 37.0
+#----------------------------------------
 #read_temp()

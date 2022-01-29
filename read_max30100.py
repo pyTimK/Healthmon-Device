@@ -6,8 +6,8 @@ import serial
 
 
 # if valid readings surpasses 10 counts, then average last 5 valid readings
-_surpass_counts = 15
-_get_average_count = 7 # Must be less than _surpass_counts
+_surpass_counts = 12
+_get_average_count = 5 # Must be less than _surpass_counts
 
 def _is_valid(pulse: int, spo2: int) -> bool:
     return pulse > 60 and spo2 > 70

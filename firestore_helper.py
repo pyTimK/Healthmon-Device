@@ -18,6 +18,12 @@ device_authenticate_ref = db.collection('authenticate').document(device_id)
 records_collection_ref = db.collection('records')
 
 
+def _initialize_device_database():
+    device_doc = device_doc_ref.get()
+    if not device_doc.exists:
+        device_doc_ref.set({"name": "", "id": "", "healthWorkers": [], "new_name": "", "new_id": "", "new_healthWorkers": [], "confirmed": False, "request_timestamp": get_timestamp()})
+
+
 print_success_write = lambda : print("---Successfully written record to firestore---")
 print_failed_write = lambda : print("---Failed to write record to firestore---")
 
@@ -40,3 +46,5 @@ def write_record_firestore(user: Dict, temp: float, pulse: int, spo2: int):
     except:
         print_failed_write()
 
+
+_initialize_device_database()
