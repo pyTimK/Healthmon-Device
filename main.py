@@ -29,6 +29,8 @@ program_store = {
     "spo2": 0,
     "confirm_code": 0,
     "confirm_code_sec": 20,
+    "hw_listener_unsub": None,
+    "device_listener_unsub": None,
 }
 
 
@@ -44,11 +46,22 @@ program_status = {
     "shutdown": False,
 }
 
+# Subscriptions
+
 #Initialize signal interrupts
 def safe_exit(signum, frame):
     program_status["alive"] = False
+    hw_listener_unsub = program_store["hw_listener_unsub"]
+    device_listener_unsub = program_store["device_listener_unsub"]
+    
+    if hw_listener_unsub is not None:
+        hw_listener_unsub.unsubscribe()
+
+    if device_listener_unsub is not None:
+        device_listener_unsub.unsubscribe()
+
     print("\n---EXITED SAFELY---")
-    exit(1)
+    exit(0)
 
 signal(SIGTERM, safe_exit)
 signal(SIGHUP, safe_exit)
@@ -143,9 +156,10 @@ def measure():
 with concurrent.futures.ThreadPoolExecutor() as executor:
     executor.submit(measure)
     executor.submit(run_lcd, program_status, program_store)
-    executor.submit(user_authenticator, program_status, program_store)
+    thread_auth = executor.submit(user_authenticator, program_status, program_store)
     executor.submit(play_startup_sound)
     executor.submit(shutdown_rpi, program_status)
     
+
     
 

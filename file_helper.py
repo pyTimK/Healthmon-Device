@@ -4,6 +4,7 @@ from typing import Dict
 paired_user_loc = "/home/pi/Desktop/paired_user.txt"
 
 def save_user(user: Dict):
+    '''saves the input user to 'paired_user_loc.txt' file'''
     try:
         with open(paired_user_loc, 'w') as f:
             f.write(json.dumps(user, default=str))
@@ -13,6 +14,7 @@ def save_user(user: Dict):
 
 
 def get_user() -> Dict:
+    '''gets the user from 'paired_user_loc.txt' file'''
     try:
         with open(paired_user_loc, "r") as f:
             read_data = f.read()
