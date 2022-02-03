@@ -89,8 +89,14 @@ def speak_results(temp: float, pulse: int, spo2: int, user: Dict):
         print("About to convert result text to speech...")
         
         _convert(_generate_string_to_speak(temp, pulse, spo2, user))
-        subprocess.run(["mpg123", _result_auido_loc], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
-    except:
+    except Exception as e:
+        print(e)
         print_failed_convert()
         return
+    
+    try:
+        subprocess.run(["mpg123", _result_auido_loc], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    except Exception as e:
+        print(e)
+        print("Failed to converted audio")

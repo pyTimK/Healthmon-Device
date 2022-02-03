@@ -98,7 +98,7 @@ def _write(phone: serial.Serial, s: str, cr=True):
 #     "pulse": 190,
 #     "spo2": 60,
 # }
-# send_SMS("09683879596", "wa")
+#send_SMS("09683879596", "wa")
 # health_worker_sms(_program_store)
 # # treay()
 # #------------------------------

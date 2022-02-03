@@ -58,7 +58,8 @@ def normal_spo2(spo2: int) -> int:
 
 
 normal_measures = lambda temp, pulse, spo2: normal_temp(temp)==0 and normal_pulse(pulse)==0 and normal_spo2(spo2)==0
-
+def is_normal_from_program_store(program_store: Dict) -> bool:
+    return normal_measures(program_store["temp"],program_store["pulse"],program_store["spo2"])
 
 def day_greetings():
     '''returns Good morning/afternoon/evening based on time of day'''

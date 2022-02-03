@@ -41,8 +41,7 @@ def read_max30100(program_status: Dict[str, bool]) -> Tuple[int, int]:
 						break
 		
 		pulse = sum(r[0] for r in valid_readings) // _get_average_count
-		spo2 = sum(r[1] for r in valid_readings) // _get_average_count
-
+		spo2 = min(sum(r[1] for r in valid_readings) // _get_average_count, 100)
 		return pulse, spo2
 	
 	except Exception as e:

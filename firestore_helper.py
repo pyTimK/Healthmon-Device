@@ -6,6 +6,7 @@ from funcs import get_formatted_day, get_formatted_hours, get_timestamp, print_u
 from file_helper import save_user
 from check_internet import has_internet
 
+
 device_id = "healthmonmikee1"
 cred = credentials.Certificate(os.environ.get("FIRESTORE_CERTIFICATE"))
 firebase_admin.initialize_app(cred)
@@ -37,7 +38,6 @@ def write_record_firestore(user: Dict, temp: float, pulse: int, spo2: int):
     if uid == "":
         return
 
-    print(user)
     if not has_internet():
         print_failed_write()
         return
@@ -76,3 +76,5 @@ def get_user() -> Dict:
         return None
 
 _initialize_device_database()
+
+

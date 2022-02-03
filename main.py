@@ -5,7 +5,6 @@ from funcs import failed_reading, normal_measures
 from file_helper import get_user
 from setproctitle import setproctitle
 import concurrent.futures
-
 from ultrasonic_sensor import wait_hand_detect, detecting_hand
 from read_max30100 import read_max30100
 from read_temp import read_temp
@@ -15,6 +14,7 @@ from user_authenticator import user_authenticator
 from google_wavenet import speak_results
 from sms import health_worker_sms
 from startup_shutdown import play_startup_sound, play_shutdown_sound, shutdown_rpi
+from rgb import run_rgb
 
 
 try:
@@ -162,6 +162,7 @@ def measure():
 with concurrent.futures.ThreadPoolExecutor() as executor:
     executor.submit(measure)
     executor.submit(run_lcd, program_status, program_store)
+    executor.submit(run_rgb, program_status, program_store)
     thread_auth = executor.submit(user_authenticator, program_status, program_store)
     executor.submit(play_startup_sound)
     executor.submit(shutdown_rpi, program_status)

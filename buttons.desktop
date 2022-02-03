@@ -1,3 +1,0 @@
-[Desktop Entry]
-Exec=lxterminal --command="python /home/pi/Desktop/buttons/main.py" --title="Button listeners"
-X-GNOME-Autostart-Delay=5
