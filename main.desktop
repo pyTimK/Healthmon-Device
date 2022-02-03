@@ -1,0 +1,3 @@
+[Desktop Entry]
+Exec=lxterminal --command="python /home/pi/Desktop/main.py" --title="HealthMon"
+X-GNOME-Autostart-Delay=5
