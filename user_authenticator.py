@@ -18,17 +18,6 @@ def _start_countdown(program_status: Dict[str, bool], program_store: Dict):
     while program_status["alive"] and program_status["is_pairing"] and program_store["confirm_code_sec"] > 0:
         program_store["confirm_code_sec"] -= 1
         sleep(1)
-    
-
-def _show_paired(program_status: Dict[str, bool]):
-    '''briefly shows in the LCD that a new user has just been paired'''
-    device_doc_ref.update({"confirmed": False})
-    program_status["paired_new_user"] = True
-    sleep(3)
-    program_status["paired_new_user"] = False
-
-
-
 
 
 def _start_pairing(new_doc, program_status: Dict[str, bool], program_store: Dict):
@@ -44,52 +33,69 @@ def _start_pairing(new_doc, program_status: Dict[str, bool], program_store: Dict
         clear_new_user()
 
 
+def _show_paired(program_status: Dict[str, bool]):
+        '''briefly shows in the LCD that a new user has just been paired'''
+        device_doc_ref.update({"confirmed": False})
+        program_status["paired_new_user"] = True
+        sleep(3)
+        program_status["paired_new_user"] = False
+
+
+def _confirm_paired(new_doc, program_status: Dict[str, bool], program_store: Dict):
+    '''briefly shows that a new user has been paired and continues to its normal operation'''
+    program_status["is_pairing"] = False
+    program_store["user"] = new_doc
+    
+    # Requires restart of device to enable realtime listener to health workers of new paired user
+    # program_store["user"]["healthWorkers"] = get_healthWorkers(program_store["user"]["id"])
+    # save_user(program_store["user"])
+
+    # Does not require restart to enable realtime listener
+    if program_store["hw_listener_unsub"] is not None:
+        program_store["hw_listener_unsub"].unsubscribe()
+    
+    program_store["hw_listener_unsub"] = healthWorkersListener(program_store)
+
+    _show_paired(program_status)
+
 
 def healthWorkersListener(program_store: Dict):
+    user = program_store["user"]
+    
+    if user is None or user["id"] is None or user["id"] == "":
+        return
+        
     def healthWorkers_doc_on_snapshot(doc_snapshot, changes, read_time):
-        print("healthWorkers snap!")
         '''The callback function that executes whenever there is a new update in any of the health workers connected with the device'''
-        for doc in doc_snapshot:
-            health_workers_dict = doc.to_dict()
+        print("healthWorkers snap!")
+        try:
+            health_workers_dict = doc_snapshot[0].to_dict()
             health_workers_dict.pop('exists', None)
             health_workers = toUnformatted(health_workers_dict)
 
-            if program_store["user"] is not None:
-                program_store["user"]["healthWorkers"] = health_workers
-                save_user(program_store["user"])
+            if user is not None:
+                user["healthWorkers"] = health_workers
+                save_user(user)
         
-    healthWorkers_doc_watch = get_healthWorkers_doc_ref(program_store["user"]["id"]).on_snapshot(healthWorkers_doc_on_snapshot)
+        except:
+            print("Failed to get associated health workers")
+    
+    try:
+        healthWorkers_doc_watch = get_healthWorkers_doc_ref(user["id"]).on_snapshot(healthWorkers_doc_on_snapshot)
+    except:
+        print("No health workers connected with this device")
+
     return healthWorkers_doc_watch
 
 def deviceListener(program_status: Dict[str, bool], program_store: Dict):
-
-    def confirm_paired(new_doc):
-        '''briefly shows that a new user has been paired and continues to its normal operation'''
-        program_status["is_pairing"] = False
-        program_store["user"] = new_doc
-        
-        # Requires restart of device to enable realtime listener to health workers of new paired user
-        # program_store["user"]["healthWorkers"] = get_healthWorkers(program_store["user"]["id"])
-        # save_user(program_store["user"])
-
-        # Does not require restart to enable realtime listener
-        if program_store["hw_listener_unsub"] is not None:
-            program_store["hw_listener_unsub"].unsubscribe()
-        
-        program_store["hw_listener_unsub"] = healthWorkersListener(program_store)
-
-        _show_paired(program_status)
-
-
-
     def device_doc_on_snapshot(doc_snapshot, changes, read_time):
-        print("device snap!")
         '''The callback function that executes whenever there is a new update to the firestore document associated with this device'''
-        for doc in doc_snapshot:
-            new_doc = doc.to_dict()
+        print("device snap!")
+        try:
+            new_doc = doc_snapshot[0].to_dict()
 
             if new_doc["confirmed"]:    # The user who wants to pair entered the right code
-                confirm_paired(new_doc)
+                _confirm_paired(new_doc, program_status, program_store)
                 return
             
             if new_doc["id"] == "" and new_doc["new_id"] == "": # The user unpaired this device
@@ -98,8 +104,6 @@ def deviceListener(program_status: Dict[str, bool], program_store: Dict):
                 program_store["user"] = new_doc
                 return
             
-            
-
             if new_doc["new_id"] == "": # Paired user updated their personal details
                 new_doc["healthWorkers"] = program_store["user"]["healthWorkers"]
                 program_store["user"] = new_doc
@@ -109,9 +113,15 @@ def deviceListener(program_status: Dict[str, bool], program_store: Dict):
             # A new pair request to this device is made
             pairing_thread = Thread(target=_start_pairing, args=(new_doc, program_status, program_store))
             pairing_thread.start()
-            
+        
+        except:
+            print("Failed to get user info from firestore")
 
-    device_doc_watch = device_doc_ref.on_snapshot(device_doc_on_snapshot)
+    try:
+        device_doc_watch = device_doc_ref.on_snapshot(device_doc_on_snapshot)
+    except:
+        print("This device is not connected to firestore yet")
+
     return device_doc_watch
 
 
@@ -134,15 +144,13 @@ def user_authenticator(program_status: Dict[str, bool], program_store: Dict):
     # if program_store["user"] and program_store["user"]["id"]:
     #     program_store["user"]["healthWorkers"] = get_healthWorkers(program_store["user"]["id"])
     #     save_user(program_store["user"])
-    
     # ---------------------------------------------------------------------
-    # with concurrent.futures.ThreadPoolExecutor() as executor:
-    #     thread_healthWorkers = executor.submit(healthWorkersListener, program_store)
-    #     thread_devices = executor.submit(deviceListener, program_status, program_store)
 
-    #     program_store["hw_listener_unsub"] = thread_healthWorkers.result(60)
-    #     program_store["device_listener_unsub"] = thread_devices.result(60)
 
-    program_store["hw_listener_unsub"] = healthWorkersListener(program_store)
-    program_store["device_listener_unsub"] = deviceListener(program_status, program_store)
+    try:
+        program_store["hw_listener_unsub"] = healthWorkersListener(program_store)
+        program_store["device_listener_unsub"] = deviceListener(program_status, program_store)
+    
+    except:
+        print("wa")
     

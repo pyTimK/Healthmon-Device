@@ -44,9 +44,9 @@ def normal_temp(temp: float) -> int:
 
 def normal_pulse(pulse: int) -> int:
     '''returns -1 if below normal, 0 if normal, and 1 if above normal'''
-    if pulse < 70:
+    if pulse < 60:
         return -1
-    if pulse > 76:
+    if pulse > 100:
         return 1
     return 0
 

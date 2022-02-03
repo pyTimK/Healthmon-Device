@@ -22,7 +22,13 @@ def read_max30100(program_status: Dict[str, bool]) -> Tuple[int, int]:
 		while program_status["alive"] and program_status["detecting_hand"] :
 			if ser.in_waiting > 0:
 				line = ser.readline().decode().rstrip()
-				pulse, spo2 = line.split(" ")
+				values = line.split(" ")
+				if len(values) != 2:
+					print("Unexpected reading from max30100: ")
+					print(line)
+					raise Exception("Unexpected reading from max30100")
+					
+				pulse, spo2 = values
 				pulse, spo2 = int(pulse), int(spo2)
 
 				print(f"{pulse} {spo2}")
@@ -39,10 +45,11 @@ def read_max30100(program_status: Dict[str, bool]) -> Tuple[int, int]:
 
 		return pulse, spo2
 	
-	except:
+	except Exception as e:
+		print(e)
 		return -1, -1
 
-	#TODO remove after fixing max30100
+	#TODO for testing purposes only
 	#return __random_temporary()
 
 

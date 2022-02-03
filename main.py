@@ -1,10 +1,9 @@
-
 import subprocess
 from signal import SIGINT, signal, SIGTERM, SIGHUP
 from time import sleep
 from funcs import failed_reading, normal_measures
 from file_helper import get_user
-
+from setproctitle import setproctitle
 import concurrent.futures
 
 from ultrasonic_sensor import wait_hand_detect, detecting_hand
@@ -16,6 +15,12 @@ from user_authenticator import user_authenticator
 from google_wavenet import speak_results
 from sms import health_worker_sms
 from startup_shutdown import play_startup_sound, play_shutdown_sound, shutdown_rpi
+
+
+try:
+    setproctitle("healthmon")
+except:
+    print("Falied to set process name")
 
 # Constants
 stop_reading_time = 5 # in seconds  
@@ -146,6 +151,7 @@ def measure():
 
         sleep(1)
         print("\n---EXITED SAFELY---")
+        sleep(1)
         subprocess.run(['sudo','shutdown', 'now'])
 
         
