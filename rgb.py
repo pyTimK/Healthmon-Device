@@ -33,12 +33,12 @@ def run_rgb(program_status: Dict[str, bool], program_store: Dict):
         # print(datetime.now().ctime())
         if program_status["paired_new_user"]:
             if prev_status != 1:
-                led.blink(on_time=0.4, off_time=0.4, on_color=colors["magenta"])
+                led.blink(on_time=0.4, off_time=0.4, on_color=colors["green"])
                 prev_status = 1
 
         elif program_status["is_pairing"]:
             if prev_status != 2:
-                led.color = colors["magenta"]
+                led.color = colors["green"]
                 prev_status = 2
             
         elif program_status["measure_error"]:

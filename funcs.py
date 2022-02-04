@@ -1,3 +1,4 @@
+import os, sys
 from datetime import datetime
 from typing import Dict
 import random
@@ -74,3 +75,13 @@ def day_greetings():
 
 def generate_code() -> int:
     return random.randint(100000, 999999)
+
+
+class HiddenPrints:
+    def __enter__(self):
+        self._original_stdout = sys.stdout
+        sys.stdout = open(os.devnull, 'w')
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        sys.stdout.close()
+        sys.stdout = self._original_stdout

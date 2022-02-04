@@ -24,6 +24,7 @@ except:
 
 # Constants
 stop_reading_time = 5 # in seconds  
+measurements_display_time_without_net = 10 # in seconds
 
 
 # Store
@@ -93,6 +94,7 @@ def on_measure_success(temp: float, pulse: int, spo2: int):
         
         ################# UPLOAD DATA TO FIREBASE
         executor.submit(write_record_firestore, program_store["user"], temp, pulse, spo2)
+        executor.submit(sleep, measurements_display_time_without_net)
 
 
 

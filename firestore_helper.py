@@ -20,6 +20,9 @@ records_collection_ref = db.collection('records')
 
 
 def _initialize_device_database():
+    if not has_internet():
+        return
+
     device_doc = device_doc_ref.get()
     if not device_doc.exists:
         device_doc_ref.set({"name": "", "id": "", "new_name": "", "new_id": "", "confirmed": False, "request_timestamp": get_timestamp()})
@@ -29,6 +32,9 @@ print_success_write = lambda : print("---Successfully written record to firestor
 print_failed_write = lambda : print("---Failed to write record to firestore---")
 
 def clear_new_user():
+    if not has_internet():
+        return
+        
     device_doc_ref.update({"new_id": "", "new_name": "", "confirmed": False})
 
 

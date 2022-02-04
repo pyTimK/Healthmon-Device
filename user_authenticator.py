@@ -1,10 +1,13 @@
 import concurrent.futures
+import contextlib
 from threading import Thread
 from time import sleep
 from typing import Dict
 from firestore_helper import device_doc_ref, device_authenticate_ref, clear_new_user, get_healthWorkers, get_healthWorkers_doc_ref, toUnformatted, get_user
-from funcs import generate_code
+from funcs import generate_code, HiddenPrints
 from file_helper import save_user
+from check_internet import has_internet
+from copy import deepcopy
 
 _time_expiration = 30 # in seconds
 
@@ -42,6 +45,9 @@ def _show_paired(program_status: Dict[str, bool]):
 
 
 def _confirm_paired(new_doc, program_status: Dict[str, bool], program_store: Dict):
+    if not has_internet():
+        return
+
     '''briefly shows that a new user has been paired and continues to its normal operation'''
     program_status["is_pairing"] = False
     program_store["user"] = new_doc
@@ -51,15 +57,15 @@ def _confirm_paired(new_doc, program_status: Dict[str, bool], program_store: Dic
     # save_user(program_store["user"])
 
     # Does not require restart to enable realtime listener
-    if program_store["hw_listener_unsub"] is not None:
-        program_store["hw_listener_unsub"].unsubscribe()
-    
-    program_store["hw_listener_unsub"] = healthWorkersListener(program_store)
+    _refresh_hw_listener(program_status, program_store)
 
     _show_paired(program_status)
 
 
-def healthWorkersListener(program_store: Dict):
+def healthWorkersListener(program_status: Dict[str, bool], program_store: Dict):
+    if not has_internet():
+        return
+
     user = program_store["user"]
     
     if user is None or user["id"] is None or user["id"] == "":
@@ -72,7 +78,6 @@ def healthWorkersListener(program_store: Dict):
             health_workers_dict = doc_snapshot[0].to_dict()
             health_workers_dict.pop('exists', None)
             health_workers = toUnformatted(health_workers_dict)
-
             if user is not None:
                 user["healthWorkers"] = health_workers
                 save_user(user)
@@ -93,7 +98,6 @@ def deviceListener(program_status: Dict[str, bool], program_store: Dict):
         print("device snap!")
         try:
             new_doc = doc_snapshot[0].to_dict()
-
             if new_doc["confirmed"]:    # The user who wants to pair entered the right code
                 _confirm_paired(new_doc, program_status, program_store)
                 return
@@ -105,17 +109,21 @@ def deviceListener(program_status: Dict[str, bool], program_store: Dict):
                 return
             
             if new_doc["new_id"] == "": # Paired user updated their personal details
-                new_doc["healthWorkers"] = program_store["user"]["healthWorkers"]
-                program_store["user"] = new_doc
-                save_user(new_doc)
+                updated_user = deepcopy(new_doc)
+                if "healthWorkers" in program_store["user"]:
+                    updated_user["healthWorkers"] = deepcopy(program_store["user"]["healthWorkers"])
+
+                program_store["user"] = updated_user
+                save_user(updated_user)
                 return
             
             # A new pair request to this device is made
             pairing_thread = Thread(target=_start_pairing, args=(new_doc, program_status, program_store))
             pairing_thread.start()
         
-        except:
-            print("Failed to get user info from firestore")
+        except Exception as e:
+            print("Failed to get user info from firestore:")
+            print(f"WHAT: {str(e)}")
 
     try:
         device_doc_watch = device_doc_ref.on_snapshot(device_doc_on_snapshot)
@@ -124,6 +132,48 @@ def deviceListener(program_status: Dict[str, bool], program_store: Dict):
 
     return device_doc_watch
 
+def _refresh_device_listener(program_status: Dict[str, bool], program_store: Dict):
+    try:
+        clear_new_user()
+    except Exception as e:
+        print("WARNING: Failed to clear new_user in device doc in firestore")
+        print(e)
+    
+    try:
+        if program_store["device_listener_unsub"] is not None:
+            #TODO remove when google core api has been updated and 'Background did not exit' does not print in stderr anymore
+            with contextlib.redirect_stderr(None):
+                program_store["device_listener_unsub"].unsubscribe()
+
+    except Exception as e:
+        print("WARNING: Problem encountered while unsubscribing device:")
+        print(e)
+
+    try:
+        program_store["device_listener_unsub"] =  deviceListener(program_status, program_store)
+    except Exception as e:
+        print("WARNING: Problem listening to device")
+        print(e)
+
+
+
+def _refresh_hw_listener(program_status: Dict[str, bool], program_store: Dict):
+    try:
+        if program_store["hw_listener_unsub"] is not None:
+            #TODO remove when google core api has been updated and 'Background did not exit' does not print in stderr anymore
+            with contextlib.redirect_stderr(None):
+                program_store["hw_listener_unsub"].unsubscribe()
+
+    except Exception as e:
+        print("WARNING: Problem encountered while unsubscribing to healthWorkers:")
+        print(e)
+    
+    try:
+        program_store["hw_listener_unsub"] =  healthWorkersListener(program_status, program_store)
+    except Exception as e:
+        print("WARNING: Problem listening to healthWorkers")
+        print(e)
+
 
 
 def user_authenticator(program_status: Dict[str, bool], program_store: Dict):
@@ -131,7 +181,6 @@ def user_authenticator(program_status: Dict[str, bool], program_store: Dict):
     Returns '''
 
     # Clear new_fields on device document in firestore
-    clear_new_user()
 
 
     # NO NEED SINCE SNAPSHOT LISTENERS ALREADY UPDATES ON STARTUP ---------
@@ -147,10 +196,6 @@ def user_authenticator(program_status: Dict[str, bool], program_store: Dict):
     # ---------------------------------------------------------------------
 
 
-    try:
-        program_store["hw_listener_unsub"] = healthWorkersListener(program_store)
-        program_store["device_listener_unsub"] = deviceListener(program_status, program_store)
-    
-    except:
-        print("wa")
+    _refresh_device_listener(program_status, program_store)
+    _refresh_hw_listener(program_status, program_store)
     
