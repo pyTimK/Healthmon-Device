@@ -3,7 +3,7 @@ import contextlib
 from threading import Thread
 from time import sleep
 from typing import Dict
-from firestore_helper import device_doc_ref, device_authenticate_ref, clear_new_user, get_healthWorkers, get_healthWorkers_doc_ref, toUnformatted, get_user
+from firestore_helper import device_doc_ref, device_authenticate_ref, clear_new_user, remove_code_firestore, set_code_firestore, get_healthWorkers, get_healthWorkers_doc_ref, toUnformatted, get_user
 from funcs import generate_code, HiddenPrints
 from file_helper import save_user
 from check_internet import has_internet
@@ -25,15 +25,21 @@ def _start_countdown(program_status: Dict[str, bool], program_store: Dict):
 
 def _start_pairing(new_doc, program_status: Dict[str, bool], program_store: Dict):
     '''Sets the device to pairing mode. During this mode, normal operations of the device are interrupted'''
+    if program_status["is_pairing"]:
+        return
+
     code = generate_code()
+    set_code_firestore(code)
     program_store["confirm_code"] = code
     program_status["is_pairing"] = True
-    device_authenticate_ref.set({"code": code})
     _start_countdown(program_status, program_store)
         
     if program_store["confirm_code_sec"] == 0 and not program_status["paired_new_user"]:
         program_status["is_pairing"] = False
         clear_new_user()
+    
+    remove_code_firestore()
+
 
 
 def _show_paired(program_status: Dict[str, bool]):

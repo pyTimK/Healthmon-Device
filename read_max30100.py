@@ -7,7 +7,7 @@ import serial
 
 # if valid readings surpasses 10 counts, then average last 5 valid readings
 _surpass_counts = 12
-_get_average_count = 5 # Must be less than _surpass_counts
+_get_average_count = 4 # Must be less than _surpass_counts
 
 def _is_valid(pulse: int, spo2: int) -> bool:
     return pulse > 60 and spo2 > 70
@@ -29,7 +29,7 @@ def read_max30100(program_status: Dict[str, bool]) -> Tuple[int, int]:
 					raise Exception("Unexpected reading from max30100")
 					
 				pulse, spo2 = values
-				pulse, spo2 = int(pulse), int(spo2)
+				pulse, spo2 = int(pulse), min(int(spo2), 100)
 
 				print(f"{pulse} {spo2}")
 				
@@ -41,7 +41,7 @@ def read_max30100(program_status: Dict[str, bool]) -> Tuple[int, int]:
 						break
 		
 		pulse = sum(r[0] for r in valid_readings) // _get_average_count
-		spo2 = min(sum(r[1] for r in valid_readings) // _get_average_count, 100)
+		spo2 = sum(r[1] for r in valid_readings) // _get_average_count
 		return pulse, spo2
 	
 	except Exception as e:

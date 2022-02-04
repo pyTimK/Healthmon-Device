@@ -28,6 +28,16 @@ def _initialize_device_database():
         device_doc_ref.set({"name": "", "id": "", "new_name": "", "new_id": "", "confirmed": False, "request_timestamp": get_timestamp()})
 
 
+    
+def set_code_firestore(code: int):
+    '''Sets the code online to be entered by the new pairing user'''
+    device_authenticate_ref.set({"code": code})
+
+
+def remove_code_firestore():
+    device_authenticate_ref.set({"code": 0})
+
+
 print_success_write = lambda : print("---Successfully written record to firestore---")
 print_failed_write = lambda : print("---Failed to write record to firestore---")
 
