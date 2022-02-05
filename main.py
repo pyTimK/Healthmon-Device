@@ -8,7 +8,7 @@ import concurrent.futures
 from ultrasonic_sensor import wait_hand_detect, detecting_hand
 from read_max30100 import read_max30100
 from read_temp import read_temp
-from LCD import run_lcd, print_results, print_measuring
+from lcd import run_lcd, print_results, print_measuring
 from firestore_helper import write_record_firestore
 from user_authenticator import user_authenticator
 from google_wavenet import speak_results
@@ -132,6 +132,9 @@ def measure():
                 print("No Hand Detected")
                 continue
 
+            if not program_status["alive"]:
+                break
+
             program_status["show_results"] = True
 
             # Stop measuring on failed readings
@@ -154,7 +157,7 @@ def measure():
         sleep(1)
         print("\n---EXITED SAFELY---")
         sleep(1)
-        subprocess.run(['sudo','shutdown', 'now'])
+        subprocess.run(['sudo','shutdown', '-h', 'now'])
 
         
 
