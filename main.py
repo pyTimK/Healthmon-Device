@@ -82,7 +82,8 @@ def on_measure_success(temp: float, pulse: int, spo2: int):
     program_store["temp"] = temp
     program_store["pulse"] = pulse
     program_store["spo2"] = spo2
-    
+    print("waw:")
+    print(program_store["user"])
 
     with concurrent.futures.ThreadPoolExecutor() as executor:
         ################# SEND MESSAGE IF NOT NORMAL READINGS

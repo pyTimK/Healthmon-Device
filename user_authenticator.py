@@ -72,9 +72,9 @@ def healthWorkersListener(program_status: Dict[str, bool], program_store: Dict):
     if not has_internet():
         return
 
-    user = program_store["user"]
+
     
-    if user is None or user["id"] is None or user["id"] == "":
+    if program_store["user"] is None or program_store["user"]["id"] is None or program_store["user"]["id"] == "":
         return
         
     def healthWorkers_doc_on_snapshot(doc_snapshot, changes, read_time):
@@ -84,15 +84,16 @@ def healthWorkersListener(program_status: Dict[str, bool], program_store: Dict):
             health_workers_dict = doc_snapshot[0].to_dict()
             health_workers_dict.pop('exists', None)
             health_workers = toUnformatted(health_workers_dict)
-            if user is not None:
-                user["healthWorkers"] = health_workers
-                save_user(user)
+            if program_store["user"] is not None:
+                program_store["user"]["healthWorkers"] = deepcopy(health_workers)
+                print(program_store["user"]["healthWorkers"])
+                save_user(program_store["user"])
         
         except:
             print("Failed to get associated health workers")
     
     try:
-        healthWorkers_doc_watch = get_healthWorkers_doc_ref(user["id"]).on_snapshot(healthWorkers_doc_on_snapshot)
+        healthWorkers_doc_watch = get_healthWorkers_doc_ref(program_store["user"]["id"]).on_snapshot(healthWorkers_doc_on_snapshot)
     except:
         print("No health workers connected with this device")
 

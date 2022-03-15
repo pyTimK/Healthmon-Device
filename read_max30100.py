@@ -4,8 +4,10 @@ from random import randint
 from time import sleep
 import serial
 
+pulse_calibration = 2
 
-# if valid readings surpasses 10 counts, then average last 5 valid readings
+
+# if valid readings surpasses 12 counts, then average last 4 valid readings
 _surpass_counts = 12
 _get_average_count = 4 # Must be less than _surpass_counts
 
@@ -42,7 +44,7 @@ def read_max30100(program_status: Dict[str, bool]) -> Tuple[int, int]:
 		
 		pulse = sum(r[0] for r in valid_readings) // _get_average_count
 		spo2 = sum(r[1] for r in valid_readings) // _get_average_count
-		return pulse, spo2
+		return pulse + pulse_calibration, spo2
 	
 	except Exception as e:
 		print(e)

@@ -37,7 +37,7 @@ def print_user(user: Dict):
 def normal_temp(temp: float) -> int:
     round(temp, 1)
     '''returns -1 if below normal, 0 if normal, and 1 if above normal'''
-    if temp < 36.1:
+    if temp < 33.0:
         return -1
     if temp > 37.2:
         return 1

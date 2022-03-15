@@ -61,7 +61,7 @@ def _generate_message_text(health_workers: List[Dict]):
         for i in range(len(health_workers) - 2):
             health_workers_text += f"{health_workers[i]['name']}, " 
 
-        health_workers_text += f"{health_workers[i]['name']} at {health_workers[i + 1]['name']}"
+        health_workers_text += f"{health_workers[len(health_workers)-2]['name']} at {health_workers[len(health_workers)-1]['name']}"
 
     return f"Ipinapadala ko na ang mensaheng ito {addressing_text} {health_workers_text}."
 
@@ -75,6 +75,7 @@ def _generate_string_to_speak(temp: float, pulse: int, spo2: int, user: Dict):
     spo2_text = f"Ang saturasyon ng oxygen sa iyong dugo ay {spo2} porsyento. "
     spo2_analysis_text = normal_result_mapping[normal_spo2(spo2)]
     message_text = "" if (normal_measures(temp, pulse, spo2) or len(user["healthWorkers"]) == 0) else _generate_message_text(user["healthWorkers"])
+    print(message_text)
     return temp_text + temp_analysis_text + pulse_text + pulse_analysis_text + spo2_text + spo2_analysis_text + message_text
 
 
@@ -100,3 +101,10 @@ def speak_results(temp: float, pulse: int, spo2: int, user: Dict):
     except Exception as e:
         print(e)
         print("Failed to converted audio")
+
+
+#TESTING-------------
+#speak_results(34.1, 77, 99, {"confirmed": True, "new_id": "", "id": "v9zsngsAZ5M5MyRIKIKsVZzyquq1", "new_name": "", "request_timestamp": "2022-02-06 09:03:24.732000+00:00", "name": "Mikee", "healthWorkers": [{"number": "09185626400", "id": "gZcLj8q48iS7ln0ZBO5YXFSNl933", "name": "Krisha ", "photoURL": "https://lh3.googleusercontent.com/a-/AOh14GhDD38dU8BOSjUN0Qd6rYfRPV--4EAulGXsHbLD7A=s96-c"}, {"number": "09683879596", "id": "drtsFBmjurSd8ca2Hkjqdnduxgm1", "photoURL": "https://lh3.googleusercontent.com/a-/AOh14GhonvrLgn3bOEU0RTbALsosITej_qDE4iedZ4BY=s96-c-rg-br100", "name": "Tim Mua123231"}, {"number": "09466583398", "photoURL": "https://lh3.googleusercontent.com/a/AATXAJxDS2TkxNgsl_0FgkpUyp1xMrSaRYreJupN0q8a=s96-c", "id": "faZPUadJv6QHixfnVehCoIdBiv92", "name": "Louren"}, {"photoURL": "", "name": "Sophia Belen", "id": "U8PJuEbvF6QFtAxm8cDVBLumPbD2", "number": "09564497810"}]})
+
+
+#--------------------
